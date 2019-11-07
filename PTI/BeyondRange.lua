@@ -1,13 +1,17 @@
 env.info("BTI: Starting Practice Range initialization");
 
 local strafePitA = {
-    "RANGEArmedHouse",
+    "RANGEStrafe",
+}
+
+local strafePitB = {
+    "RANGEStrafe2",
 }
 
 local bombtargets = {
-    "RANGETruck",
-    "RANGEOutpost",
-    "RANGECar",
+    "RANGEBomb1",
+    "RANGEBomb2",
+    "RANGEBomb3",
 }
 
 rangeStatic = UNIT:FindByName("BLUE CC")
@@ -17,6 +21,7 @@ range = RANGE:New("Weapon Practice Range");
 range:SetRangeLocation(rangeCoord)
 range:SetRangeRadius(10000)
 range:AddStrafePit(strafePitA, 3000, 500, nil, true, 20, 300);
+range:AddStrafePit(strafePitB, 3000, 500, nil, true, 20, 300);
 
 range:AddBombingTargets(bombtargets, 50, false);
 range:Start();

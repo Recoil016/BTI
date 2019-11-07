@@ -61,6 +61,8 @@ end
 
 -- KC130Tanker = nil
 KC135Tanker = nil
+KC135Tanker2 = nil
+KC135Tanker3 = nil
 -- S3Tanker = nil
 E2EWR = nil
 function spawnServices(something)
@@ -69,6 +71,8 @@ function spawnServices(something)
     E2EWR = SPAWN:New('BLUE C EWR E3'):Spawn()
     -- KC130Tanker = SPAWN:New('BLUE REFUK KC130'):Spawn()
     KC135Tanker = SPAWN:New('BLUE C REFUK 135'):Spawn()
+	KC135Tanker2 = SPAWN:New('BLUE C REFUK 135BOOM'):Spawn()
+	KC135Tanker3 = SPAWN:New('BLUE C REFUK 135BOOMfast'):Spawn()
     -- S3Tanker = SPAWN:New('BLUE C REFUK KC130 Navy'):Spawn()
 end
 
@@ -371,7 +375,7 @@ function markRemoved(Event)
         local coord = COORDINATE:NewFromVec3(vec3)
         coord.y = coord:GetLandHeight()
 
-        if text:find("-fac") then   
+        if text:find("-fac") then
             handleFACRequest(text, coord)
         elseif text:find("-tanker") then
             handleTankerRequest(text, coord)

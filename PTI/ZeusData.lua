@@ -1,6 +1,9 @@
 
 ZeusTable = {
     --BLUE
+	["BLUf18"] = {
+        ["type"] = "air",
+    },
     ["BLUpredator"] = {
         ["type"] = "air"
     },
@@ -58,6 +61,9 @@ ZeusTable = {
         ["type"] = "air",
     },
     ["mig23"] = {
+        ["type"] = "air",
+    },
+	["mig25"] = {
         ["type"] = "air",
     },
     ["mig29"] = {
