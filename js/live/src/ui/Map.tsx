@@ -6,9 +6,11 @@ import DmsCoordinates from 'dms-conversion';
 import Group, { isGroup } from '../model/group';
 import Waypoint, { WaypointType } from '../model/waypoint';
 import renderLayers from '../utils/groupsRenderer';
+import renderChartLayers, { injectDefaultSources } from '../utils/chartRenderer';
 import renderHeatmap from '../utils/heatmapRenderer';
 import renderRoute from '../utils/routeRenderer';
-import {coordinatesToDMM} from '../utils/coordinatesUtils';
+import { coordinatesToDMM } from '../utils/coordinatesUtils';
+import FilterBox from './FilterBox';
 import GroupPopup from './GroupPopup';
 
 import config from '../config.json';
@@ -38,12 +40,12 @@ const Mapbox = ReactMapboxGl({
     antialias: true,
 });
 
+const mapCenters: { [key: string]: [number, number] } = {
+    'PG': [55.415474, 26.078377],
+    'CCS': [41.139825, 42.659296],
+}
+
 interface Props {
-    showHeatmap: boolean,
-    showBlue: boolean,
-    showAirDefenses: boolean,
-    showArmor: boolean,
-    showGround: boolean,
     route?: Waypoint[],
     onSelectMapPoint: (point: LngLat, type: WaypointType, name?: string) => void
 }
@@ -53,14 +55,26 @@ interface State {
     currentGroups: Group[],
     selectedGroup?: Group,
     selectedPoint?: LngLat,
+    showHeatmap: boolean,
+    showBlue: boolean,
+    showAirDefenses: boolean,
+    showArmor: boolean,
+    showGround: boolean,
+    showApproachChart: boolean,
 }
 
 const defaultZoom: [number] = [7];
 
 export default class Map extends React.Component<Props> {
     state: State = {
-        center: [40.981280, 42.665656],
+        center: mapCenters[config.map],
         currentGroups: Array<Group>(),
+        showHeatmap: true,
+        showBlue: true,
+        showAirDefenses: true,
+        showArmor: true,
+        showGround: true,
+        showApproachChart: false,
     };
     lastLocation?: [number, number] = undefined;
     private underlyingMap: MapboxGl.Map | undefined;
@@ -88,6 +102,7 @@ export default class Map extends React.Component<Props> {
             console.log(error);
         }
     }
+
     private groupClickHandler(group: Group) {
         this.setState({ selectedGroup: group });
     }
@@ -97,8 +112,13 @@ export default class Map extends React.Component<Props> {
     private groupAddToFlightPlan(group: Group) {
         this.props.onSelectMapPoint(new LngLat(group.longitude, group.latitude), WaypointType.DMPI, group.displayName);
     }
-    private mapMoveEnd(map: MapboxGl.Map, event: any) {
-        const center = map.getCenter()
+
+    private onFilterSelection = (filterKey: string, value: boolean) => {
+        this.setState({ [filterKey]: value });
+    }
+
+    private mapLoaded(map: MapboxGl.Map) {
+        injectDefaultSources(map);
     }
 
     private mapMouseClick(map: MapboxGl.Map, event: any) {
@@ -121,12 +141,15 @@ export default class Map extends React.Component<Props> {
     }
 
     render() {
-        const { showAirDefenses, showArmor, showBlue, showGround, showHeatmap, route } = this.props;
-        const { selectedGroup, selectedPoint } = this.state;
+        const { route } = this.props;
+        const { selectedGroup, selectedPoint, showAirDefenses, showArmor, showBlue, showGround, showHeatmap, showApproachChart, } = this.state;
 
         if (!this.state.currentGroups.length) {
             return (
-                <h2>Loading...</h2>
+                <div>
+                    <h2>Loading...</h2>
+                    <p>If this message persist, the server does not support exporting groups for live map purposes</p>
+                </div>
             )
         }
 
@@ -136,6 +159,8 @@ export default class Map extends React.Component<Props> {
             { showAirDefenses, showArmor, showBlue, showGround });
         const heatmapLayer = renderHeatmap(this.state.currentGroups);
         const routeLayer = renderRoute(route);
+        // const chartSources = renderSources();
+        const chartLayers = renderChartLayers();
 
         let popup = undefined;
         if (selectedGroup) {
@@ -168,18 +193,27 @@ export default class Map extends React.Component<Props> {
                     style={"mapbox://styles/victorcotap/cjypbpdul4n6j1cmpkt13719b"}
                     center={this.state.center}
                     zoom={defaultZoom}
-                    onMoveEnd={(map, event) => this.mapMoveEnd(map, event)}
+                    onStyleLoad={(map) => this.mapLoaded(map)}
                     onClick={(map, event) => this.mapMouseClick(map, event)}
                     containerStyle={{
                         width: "100%",
                         height: "100%"
                     }}>
+                    {showApproachChart ? chartLayers : undefined}
                     {showHeatmap ? heatmapLayer : undefined}
                     {groupLayers}
                     {routeLayer}
                     {/* noop */}
                     {popup}
                 </Mapbox>
+                <FilterBox
+                    showAirDefenses={showAirDefenses}
+                    showArmor={showArmor}
+                    showBlue={showBlue}
+                    showGround={showGround}
+                    showHeatmap={showHeatmap}
+                    onFilterSelection={this.onFilterSelection}
+                />
                 {cursorCoordinates}
             </div>
         )

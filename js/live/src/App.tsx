@@ -10,8 +10,11 @@ import {
 import LiveMap from './ui/LiveMap';
 import Rules from './ui/Rules';
 import Abstract from './ui/Abstract';
+import Airboss from './ui/Airboss';
 
 import './App.css';
+import config from './config.json';
+
 
 const styleHeader: CSSProperties = {
   boxSizing: "border-box",
@@ -31,7 +34,7 @@ const styleLiveMap: CSSProperties = {
 }
 
 const styleLink: CSSProperties = {
-  color: "green",
+  color: "#00CC00",
   fontWeight: "bold",
 }
 
@@ -40,18 +43,18 @@ const App: React.FC = () => {
     <BrowserRouter>
       <div className="App">
         <header style={styleHeader}>
-          <h1 style={{ fontSize: "1.2rem", margin: "0" }}>APEX Advance Warfare</h1>
+          <h1 style={{ fontSize: "1.2rem", margin: "0" }}>{config.serverName}</h1>
         </header>
         <section style={styleTopSection}>
-          <Link style={styleLink} to="/">Map</Link>
-          <Link style={styleLink} to="/airboss">Airboss</Link>
-          <Link style={styleLink} to="/rules">Rules</Link>
-          <Link style={styleLink} to="/about">About</Link>
+          <Link style={styleLink} to="/">MAP</Link>
+          <Link style={styleLink} to="/airboss">GREENIE BOARD</Link>
+          {config.showRules ? <Link style={styleLink} to="/rules">RULES</Link> : undefined}
+          {config.showAbout ? <Link style={styleLink} to="/about">ABOUT</Link> : undefined}
         </section>
         <section style={styleLiveMap}>
           <Switch>
             <Route path="/airboss">
-              {undefined}
+              <Airboss />
             </Route>
             <Route path="/about">
               <Abstract />

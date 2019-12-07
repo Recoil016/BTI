@@ -7,10 +7,7 @@ import Map from './Map';
 import CSARSlots from './CSARSlots';
 import FlightPlanner from './FlightPlanner';
 
-import RedGround from '../assets/Red-Ground.png';
-import RedSAM from '../assets/Red-SAM.png';
-import RedArmor from '../assets/Red-Armor.png';
-import BlueGround from '../assets/Blue-Ground.png';
+
 import Waypoint, { WaypointType } from '../model/waypoint';
 import {genColor} from '../utils/colorUtils';
 
@@ -24,7 +21,7 @@ const styleToolbar: CSSProperties = {
     alignItems: 'flex-end',
     paddingLeft: "10px",
     paddingRight: "10px",
-    paddingBottom: '5px',
+    marginBottom: "15px"
 }
 
 const styleContentArea: CSSProperties = {
@@ -55,25 +52,20 @@ const styleMap: CSSProperties = {
 const styleButton: CSSProperties = {
     boxSizing: "border-box",
     margin: "0 10px 0 0",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#aaaaaa",
     color: "#333333",
     height: "2rem",
-    border: "none"
+    border: "none",
+    borderRadius: "5px",
+    boxShadow: "4px 4px 2px 2px #555555",
 }
-
-const styleImage: CSSProperties = {
-    width: 20,
-    height: 20,
+const selectedStyleButton: CSSProperties = {
+    boxShadow: "4px 4px 2px 2px orange",
 }
 
 interface State {
     showSlots: boolean,
     showFlightPlanner: boolean,
-    showHeatmap: boolean,
-    showBlue: boolean,
-    showAirDefenses: boolean,
-    showArmor: boolean,
-    showGround: boolean,
     route: Waypoint[],
 }
 
@@ -81,11 +73,6 @@ export default class LiveMap extends React.Component {
     state: State = {
         showSlots: false,
         showFlightPlanner: false,
-        showHeatmap: true,
-        showBlue: true,
-        showAirDefenses: true,
-        showArmor: true,
-        showGround: true,
         route: Array<Waypoint>(),
     }
 
@@ -110,46 +97,22 @@ export default class LiveMap extends React.Component {
         const route = this.state.route
         getElevation([point.lng, point.lat], (error: Error, elevation: number) => {
             if (error) { console.warn(error); }
-            const color = type == WaypointType.waypoint ? '#' + genColor(point.lat + point.lng) : undefined;
+            const color = type === WaypointType.waypoint ? '#' + genColor(point.lat + point.lng) : undefined;
             route.push({latitude: point.lat, longitude: point.lng, elevation, name, color, type});
             this.setState({route});
         })
     }
 
     render() {
-        const { showFlightPlanner, showSlots, showAirDefenses, showArmor, showBlue, showGround, showHeatmap } = this.state;
+        const { showFlightPlanner, showSlots} = this.state;
+        const slotsButtonStyle = showSlots ? {...styleButton, ...selectedStyleButton} : styleButton;
+        const fpButtonStyle = showFlightPlanner ? {...styleButton, ...selectedStyleButton} : styleButton;
+
         return (
             <div>
                 <div style={styleToolbar}>
-                    <button style={styleButton} onClick={(event) => this.setState({showSlots: !this.state.showSlots})}>Slots List On/Off</button>
-                    <div>
-                        <input type="checkbox" name="heatmap" defaultChecked={true} onChange={(event) => this.setState({showHeatmap: event.target.checked}) }/>
-                        <label> Heatmap</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="blue" defaultChecked={true} onChange={(event) => this.setState({showBlue: event.target.checked}) }/>
-                        <img style={styleImage} src={BlueGround} alt={''} />
-                        <label> BLUFOR</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="air-defenses" defaultChecked={true} onChange={(event) => this.setState({showAirDefenses: event.target.checked}) }/>
-                        <img style={styleImage} src={RedSAM} alt={''}/>
-                        <label> Air Defenses</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="armor" defaultChecked={true} onChange={(event) => this.setState({showArmor: event.target.checked}) }/>
-                        <img style={styleImage} src={RedArmor} alt={''} />
-                        <label> Armor</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" name="ground" defaultChecked={true} onChange={(event) => this.setState({showGround: event.target.checked}) }/>
-                        <img style={styleImage} src={RedGround} alt={''}/>
-                        <label> Ground forces</label>
-                    </div>
-
-
-                    <button style={styleButton} onClick={(event) => this.setState({showFlightPlanner: !this.state.showFlightPlanner})}>Flight Planning</button>
-
+                    <button style={slotsButtonStyle} onClick={(event) => this.setState({showSlots: !this.state.showSlots})}> Toggle Slots List</button>
+                    <button style={fpButtonStyle} onClick={(event) => this.setState({showFlightPlanner: !this.state.showFlightPlanner})}>Flight Planning Mode</button>
                 </div>
                 <div style={styleContentArea}>
                     {showSlots ? (
@@ -159,11 +122,6 @@ export default class LiveMap extends React.Component {
                     ) : null}
                     <div style={styleMap}>
                         <Map
-                            showAirDefenses={showAirDefenses}
-                            showArmor={showArmor}
-                            showBlue={showBlue}
-                            showGround={showGround}
-                            showHeatmap={showHeatmap}
                             onSelectMapPoint={this.onSelectMapPoint}
                             route={this.state.route}
                         />
