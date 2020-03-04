@@ -170,6 +170,15 @@ ZeusTable = {
     ["APCbtr"] = {
         ["type"] = "ground",
     },
+    ["APCbmp"] = {
+        ["type"] = "ground",
+    },
+    ["APCbrdm"] = {
+        ["type"] = "ground",
+    },
+    ["APCbtrd"] = {
+        ["type"] = "ground",
+    },
     ["APCstryker"] = {
         ["type"] = "ground",
     },
@@ -190,6 +199,15 @@ ZeusTable = {
         ["type"] = "ground",
     },
     ["VEHlandrover"] = {
+        ["type"] = "ground",
+    },
+    ["VEHural"] = {
+        ["type"] = "ground",
+    },
+    ["VEHfuel"] = {
+        ["type"] = "ground",
+    },
+    ["VEHrearm"] = {
         ["type"] = "ground",
     },
     --FOR
@@ -215,7 +233,10 @@ ZeusTable = {
     ["INFsquad"] = {
         ["type"] = "ground",
     },
-    ["INFseals"] = {
+    ["INFteam"] = {
+        ["type"] = "ground",
+    },
+    ["INFspetsnaz"] = {
         ["type"] = "ground",
     },
     --BOA
