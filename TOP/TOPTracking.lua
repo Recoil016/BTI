@@ -1,5 +1,9 @@
 env.info("BTI: Tracking here!")
 
+if JSONLib == nil then
+    JSONLib = dofile("C:\\BTI\\Json.lua")
+end
+
 local trackingMaster = {}
 local trackingMasterPath = "C:\\BTI\\Tracking\\TrackingFile.json"
 
@@ -33,8 +37,13 @@ local function trackGroup(group, master)
     end
     if groupName then
         -- env.info("BTI: tracking group data " .. groupName .. " -> " .. UTILS.OneLineSerialize({groupCoalition, groupName, groupCategory, groupType, groupAlive}))
-        master[groupName] = {
-            ["alive"] = groupAlive,
+        local groupData = trackingMaster[groupName]
+        local groupIsReallyAlive = groupAlive
+        if groupData ~= nil and groupData["alive"] == false then
+            groupIsReallyAlive = false
+        end
+        trackingMaster[groupName] = {
+            ["alive"] = groupIsReallyAlive,
             ["coalition"] = groupCoalition,
             ["category"] = groupCategory,
             ["type"] = groupType,
@@ -59,7 +68,7 @@ function trackAliveGroups()
             trackGroup(group, trackingMaster)
         end
     )
-    -- env.info("BTI: tracking alive finished")
+    env.info("BTI: tracking alive finished")
 end
 
 function computePersistenceGroups()
@@ -79,7 +88,7 @@ function computePersistenceGroups()
             end
         end
     end
-    -- env.info("BTI: tracking persistence finished")
+    env.info("BTI: tracking persistence finished")
 end
 
 
@@ -93,6 +102,8 @@ local function applyMaster(master)
                 env.info("BTI: Destroying dead group" .. groupName)
                 dcsGroup:Destroy()
             end
+        elseif group["alive"] == nil or group["alive"] == false then
+            env.info("BTI: Couldn't find dead group " .. groupName .. "to apply master to")
         end
     end
     -- TODO foreach group of master, check if alive and destroy if not
@@ -109,23 +120,25 @@ function saveMasterTracking(master, masterPath)
 end
 
 -- Tracking Engine --------------------------------------------------------
-function startTrackingEngine()
+function startTrackingEngine(something)
     local savedMasterBuffer = loadFile(trackingMasterPath)
     if savedMasterBuffer ~= nil and TOPGroupPersistence then
         local savedMaster = JSONLib.decode(savedMasterBuffer)
         applyMaster(savedMaster)
+        trackingMaster = savedMaster
     else
         env.info("BTI: No Tracking master file found, reset in progress")
     end
-    SCHEDULER:New(nil, trackAliveGroups, {"something"}, 5, 30)
+    SCHEDULER:New(nil, trackAliveGroups, {"something"}, 10, 60)
 
-    SCHEDULER:New(nil, computePersistenceGroups, {"something"}, 10, 60)
-   
+    SCHEDULER:New(nil, computePersistenceGroups, {"something"}, 15, 60)
+
     SCHEDULER:New(nil, saveMasterTracking, {trackingMaster, trackingMasterPath}, 30, 60)
 
 end
 
-startTrackingEngine()
+SCHEDULER:New(nil, startTrackingEngine, {trackingMaster, trackingMasterPath}, 10)
+-- startTrackingEngine()
 
 env.info("BTI: Tracking better than google tracks your location")
 
